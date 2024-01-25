@@ -16,24 +16,25 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/products")
 public class ProductController {
 
     @Autowired
     ProductRepository productRepository;
 
-    @PostMapping("/products")
+    @PostMapping
     public ResponseEntity<ProductModel> saveProduct (@RequestBody @Valid ProductDTO productDTO) {
         var productModel = new ProductModel();
         BeanUtils.copyProperties(productDTO, productModel);
         return ResponseEntity.status(HttpStatus.CREATED).body(productRepository.save(productModel));
     }
 
-    @GetMapping("/products")
+    @GetMapping
     public ResponseEntity<List<ProductModel>> getAllProducts() {
         return ResponseEntity.status(HttpStatus.OK).body(productRepository.findAll());
     }
 
-    @GetMapping("/products/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Object> getProductById(@PathVariable(value = "id") UUID id) {
         Optional<ProductModel> productModel = productRepository.findById(id);
         if(productModel.isEmpty()) {
@@ -42,7 +43,7 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productModel.get());
     }
 
-    @DeleteMapping("/products/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity deleteProductById(@PathVariable(value = "id") UUID id) {
         Optional<ProductModel> productModel = productRepository.findById(id);
         if(productModel.isEmpty()) {
@@ -52,7 +53,7 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body("Produto removido com sucesso.");
     }
 
-    @PutMapping("/products/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity updateProductById(@PathVariable(value = "id") UUID id,
                                             @RequestBody @Valid ProductDTO productDTO ) {
         Optional<ProductModel> productModel = productRepository.findById(id);
