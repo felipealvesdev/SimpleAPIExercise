@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,9 +35,11 @@ public class AuthenticationController {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
         var auth = this.authenticationManager.authenticate(usernamePassword);
 
+        var user = (User) auth.getPrincipal();
         var token = tokenService.generateToken((User) auth.getPrincipal());
+        var role = getRoleByName(user.getLogin());
 
-        return ResponseEntity.ok(new LoginResponseDTO(token));
+        return ResponseEntity.ok(new LoginResponseDTO(token, role));
     }
 
     @PostMapping("/register")
@@ -49,6 +52,16 @@ public class AuthenticationController {
         this.repository.save(newUser);
 
         return ResponseEntity.ok().build();
+    }
+
+    public String getRoleByName(String name) {
+        User user = repository.findUserRoleByLogin(name);
+        if (user != null) {
+            return user.getRole().getRole();
+        } else {
+            // Se o usuário não for encontrado, você pode lançar uma exceção, retornar um valor padrão ou lidar de outra maneira.
+            throw new IllegalArgumentException("Usuário não encontrado com o nome de login: " + name);
+        }
     }
 
 }
